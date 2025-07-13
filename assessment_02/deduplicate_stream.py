@@ -5,7 +5,6 @@ import argparse
 def deduplicate_data(df, strategy='latest', window='200ms'):
     print(f"Input records: {len(df)}")
 
-    # Parse timestamps robustly
     if df['timestamp'].dtype == 'object':
         print("Converting timestamps...")
         df['timestamp'] = pd.to_datetime(df['timestamp'], format='ISO8601', utc=True, errors='coerce')
@@ -17,25 +16,22 @@ def deduplicate_data(df, strategy='latest', window='200ms'):
         df = df.dropna(subset=['timestamp']).reset_index(drop=True)
     print(f"Records after timestamp parsing: {len(df)}")
 
-    # Round timestamps to the nearest window (e.g., 200ms)
-    df.loc[:, 'timestamp_200ms'] = df['timestamp'].dt.round(window)
+    df.loc[:, 'timestamp_rounded'] = df['timestamp'].dt.round(window)
 
-    # Deduplicate based on symbol and rounded timestamp
     if strategy == 'latest':
-        deduped = df.sort_values('timestamp').drop_duplicates(subset=['symbol', 'timestamp_200ms'], keep='last')
+        deduped = df.sort_values('timestamp').drop_duplicates(subset=['symbol', 'timestamp_rounded'], keep='last')
     elif strategy == 'first':
-        deduped = df.sort_values('timestamp').drop_duplicates(subset=['symbol', 'timestamp_200ms'], keep='first')
+        deduped = df.sort_values('timestamp').drop_duplicates(subset=['symbol', 'timestamp_rounded'], keep='first')
     elif strategy == 'average':
-        deduped = df.groupby(['symbol', 'timestamp_200ms'], as_index=False)['price'].mean()
+        deduped = df.groupby(['symbol', 'timestamp_rounded'], as_index=False)['price'].mean()
     elif strategy == 'highest_price':
-        idx = df.groupby(['symbol', 'timestamp_200ms'])['price'].idxmax()
+        idx = df.groupby(['symbol', 'timestamp_rounded'])['price'].idxmax()
         deduped = df.loc[idx].reset_index(drop=True)
     else:
         raise ValueError(f"Unknown strategy: {strategy}")
 
-    # Sort and clean up
-    deduped = deduped.sort_values(['symbol', 'timestamp_200ms', 'timestamp']).reset_index(drop=True)
-    deduped = deduped.rename(columns={'timestamp_200ms': 'timestamp'})
+    deduped = deduped.sort_values(['symbol', 'timestamp_rounded', 'timestamp']).reset_index(drop=True)
+    deduped = deduped.rename(columns={'timestamp_rounded': 'timestamp'})
     deduped = deduped[['symbol', 'timestamp', 'price']]
 
     print(f"Output records: {len(deduped)}")
@@ -43,10 +39,11 @@ def deduplicate_data(df, strategy='latest', window='200ms'):
     return deduped
 
 def main():
-    parser = argparse.ArgumentParser(description='Deduplicate stream processing output (200ms window)')
+    parser = argparse.ArgumentParser(description='Deduplicate stream processing output (windowed deduplication)')
     parser.add_argument('input_file', help='Input CSV file')
     parser.add_argument('output_file', help='Output CSV file')
     parser.add_argument('--strategy', choices=['latest', 'first', 'average', 'highest_price'], default='latest')
+    parser.add_argument('--window', type=str, default='200ms', help='Deduplication window (e.g., 200ms, 1s)')
     args = parser.parse_args()
 
     try:
@@ -58,7 +55,7 @@ def main():
         if missing_columns:
             print(f"Error: Missing required columns: {missing_columns}")
             sys.exit(1)
-        deduped_df = deduplicate_data(df, args.strategy, window='200ms')
+        deduped_df = deduplicate_data(df, args.strategy, window=args.window)
         deduped_df.to_csv(args.output_file, index=False)
         print(f"Deduplicated data saved to {args.output_file}")
     except Exception as e:
