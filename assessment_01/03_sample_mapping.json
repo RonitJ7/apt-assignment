@@ -1,0 +1,27 @@
+# Items in <> are to be updated by candidate in the json
+{
+  "deltaX": {
+    "mapping": "<actual_field_name>",
+    "confidence": <float>
+  },
+  "gamma": {
+    "mapping": "<actual_field_name>",
+    "confidence": <float>
+  },
+  "omega": {
+    "mapping": "<actual_field_name>",
+    "confidence": <float>
+  },
+  "flux": {
+    "mapping": "<actual_field_name>",
+    "confidence": <float>
+  },
+  "pulse": {
+    "mapping": "<actual_field_name>",
+    "confidence": <float>
+  },
+  "neutronCount": {
+    "mapping": "<actual_field_name>",
+    "confidence": <float>
+  }
+}
