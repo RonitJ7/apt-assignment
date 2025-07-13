@@ -1,0 +1,11 @@
+delta >= omega
+gamma >= delta
+gamma >= omega
+gamma >= flux
+flux >= omega
+
+pulse is not related to any of the columns
+
+
+ordering:
+( gamma >= delta ~ flux >= omega ) ~ pulse
