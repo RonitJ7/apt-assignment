@@ -78,7 +78,7 @@ def validate_data_integrity(df: pd.DataFrame, mapping: Dict[str, Any]) -> bool:
     if low_open_violations > 0:
         violations.append(f"Low > Open: {low_open_violations} violations")
 
-    # Check Low <= Close
+    # Check Low <= Closez
     low_close_violations = (df[low_col] > df[close_col]).sum()
     if low_close_violations > 0:
         violations.append(f"Low > Close: {low_close_violations} violations")
