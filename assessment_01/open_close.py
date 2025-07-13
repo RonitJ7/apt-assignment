@@ -6,19 +6,19 @@ df = pd.read_csv('data.csv')
 columns = df.columns.tolist()
 print("Columns:", columns)
 
+df_prev = df.shift(1)
+
+results = []
+
 for open_col in columns:
     for close_col in columns:
         if open_col == close_col:
             continue
+        
+        diff_sum = abs(df[open_col].iloc[1:] - df_prev[close_col].iloc[1:]).sum()
+        
+        results.append((open_col, close_col, diff_sum))
+        print(f"{open_col}, {close_col}, {diff_sum}")
 
-        print(f"\nSelected columns: open = '{open_col}', close = '{close_col}'")
-
-        df['prev_close'] = df[close_col].shift(1)
-
-        df['abs_diff'] = (df[open_col] - df['prev_close']).abs()
-
-        diffs = df['abs_diff'].dropna()
-
-        print(f"Sum of differences: {diffs.sum()}")
-
-# flux and pulse have the lowest diffsd
+min_result = min(results, key=lambda x: x[2])
+print(f"\nLowest difference: {min_result[0]} (open) vs {min_result[1]} (close) = {min_result[2]}")
