@@ -1,26 +1,26 @@
 {
   "deltaX": {
-    "mapping": "<actual_field_name>",
-    "confidence": <float>
+    "mapping": "open",
+    "confidence": 1.0
   },
   "gamma": {
-    "mapping": "<actual_field_name>",
-    "confidence": <float>
+    "mapping": "high",
+    "confidence": 1.0
   },
   "omega": {
-    "mapping": "<actual_field_name>",
-    "confidence": <float>
+    "mapping": "low",
+    "confidence": 1.0
   },
   "flux": {
-    "mapping": "<actual_field_name>",
-    "confidence": <float>
+    "mapping": "close",
+    "confidence": 1.0
   },
   "pulse": {
-    "mapping": "<actual_field_name>",
-    "confidence": <float>
+    "mapping": "price",
+    "confidence": 1.0
   },
   "neutronCount": {
-    "mapping": "Volume",
+    "mapping": "volume",
     "confidence": 1.0
   }
 }
