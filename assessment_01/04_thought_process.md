@@ -1,4 +1,6 @@
-# Thought Process
+# Thought Process 
+
+Repository : https://github.com/RonitJ7/apt-assignment
 
 ## The Challenge
 
@@ -163,67 +165,17 @@ We explored multiple strategies to determine which columns represent Open and Cl
 ---
 
 
-## Validation & Confidence Assessment
+## Validation
 
-[Show how you validated your findings and assessed confidence]
+Validation is based on basic OCLVH properties such as High being greater than every other metric (other than volume). Volume must be a positive integer. Low must be less than every other metric. 
 
-### Statistical Validation
-| Column | Identified As | Confidence | Key Evidence |
-|--------|---------------|------------|--------------|
-| neuronCount | Volume | 95% | Always positive integers |
-| deltaX | High | 85% | Dominated maximum counts |
-| flux | Low | 80% | Dominated minimum counts |
-| pulse | Open | 70% | Temporal correlation patterns |
+## Confidence
 
-### Cross-Validation Tests
-[Describe additional tests you ran to verify your mapping]
+1. For Volume, the confidence is 1.0 because the neutronCount satsified the constraint of large positive integer in every row.
+2. For High, it was larger than all of OCLP data for every single row. So the confidence is 1.0
+3. For Low, it was smaller than all of OCLP for mostrows. So, the confidence is 0.9997.
+4. For Price, price can be the only one whose value doesn't fall between Low and High. So, as there is no information gain the confidence is minimum of high and low which is 0.9997.
+5. Using the third technique described earlier to distinguish open and close, we get confidence of 0.5018 for both (as they are a pair)
 
----
 
-## Key Insights & Learnings
 
-### What Worked Well
-- [Insight 1 about your approach]
-- [Insight 2 about the data]
-- [Insight 3 about the methodology]
-
-### What Was Challenging
-- [Challenge 1 and how you overcame it]
-- [Challenge 2 and lessons learned]
-
-### If I Did This Again
-[What you'd do differently or improvements you'd make]
-
----
-
-## The Final Mapping
-
-```python
-column_mapping = {
-    'neuronCount': 'Volume',
-    'deltaX': 'High', 
-    'flux': 'Low',
-    'pulse': 'Open',
-    'remaining_column': 'Close'
-}
-```
-
-**Overall Confidence: 82%**
-
----
-
-## Conclusion
-
-[Summarize your success, the key methodology that worked, and why this approach could be useful for similar problems]
-
-*The combination of domain knowledge about financial data constraints, statistical analysis, and iterative validation allowed us to successfully reverse-engineer the column mapping with high confidence.*
-
----
-
-## Code Repository
-
-[Link to full code/notebook if available]
-
----
-
-*Tags: #DataScience #FinancialData #ReverseEngineering #DataDetective*

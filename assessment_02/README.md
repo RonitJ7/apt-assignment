@@ -1,13 +1,13 @@
-# Future Improvements
+# Readme
 
-## Current Issues Identified
+## Root Cause Identified
 
 - Race conditions: Multiple workers process the same event simultaneously, leading to duplicates and inconsistent output.
 - Lack of idempotency: Retried or overlapping jobs can emit duplicate or conflicting records.
 - No event ownership: Events are not partitioned or locked, so any worker can process any event at any time.
 - No deduplication layer: The output pipeline does not filter out duplicates or resolve conflicts.
 
-## Recommended Architectural Improvements
+## Future Improvements
 
 ### 1. Enforce Event Partitioning and Ownership
 - Use a message queue (e.g., Kafka) with partitioning by event key (e.g., symbol or event_id).

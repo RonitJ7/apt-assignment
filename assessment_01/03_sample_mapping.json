@@ -1,7 +1,7 @@
 {
-  "deltaX": {
+  "flux": {
     "mapping": "open",
-    "confidence": 1.0
+    "confidence": 0.5018
   },
   "gamma": {
     "mapping": "high",
@@ -9,15 +9,15 @@
   },
   "omega": {
     "mapping": "low",
-    "confidence": 1.0
+    "confidence": 0.9997
   },
-  "flux": {
+  "deltaX": {
     "mapping": "close",
-    "confidence": 1.0
+    "confidence": 0.5018
   },
   "pulse": {
     "mapping": "price",
-    "confidence": 1.0
+    "confidence": 0.9997
   },
   "neutronCount": {
     "mapping": "volume",
