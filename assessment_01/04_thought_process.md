@@ -1,28 +1,168 @@
-# Thought Process 
+# Thought Process
 
-## Approach
-### Volume
-I started by trying to find volume. I quickly observed that the column **neuronCount** had a significantly higher magnitude than every other column. It was also the only column that was **always positive** throughout the entire dataset. It also had **no decimal points** to it. These are all obviously necessary for Volume, as it must be a positive integer (since it is the count of shares or contracts traded). **All these requirements were satisfied** in every single row by the neuronCount column and so we can conclude with **confidence 1** that neuronCount is volume.
+## The Challenge
 
-### High and Low
-Now, we know High must be greater than Low, Open and Close. Since we are not provided information about how price is calculated, we cannot yet say High is greater than Price. Similarly for Low, it must be smaller than High, Open and Close. Another intuitive way to think about it is that Low must be the column that is smaller than the most amount of other columns. We can say the same about high. This is how we get candidate high and candidate low. Then, for these candidate high and low, we check how many rows it is greater and lesser respectively than every other column in the row. 
+Presented with a dataset containing financial time series data. All the column names are masked with cryptic names like 'neuronCount', 'deltaX', 'flux', and 'pulse'. Task was to identify which columns represented the OHLCVP (Open, High, Low, Close, Volume, Price) financial metrics.
 
-### Open and Close 
+---
 
-Next, I checked for the ..... values across rows using ........... logic. I found that ................
+### The Dataset: First Impressions
 
-Then, I inspected `deltaX`, `flux`, and `pulse`. These showed .............
+The dataset consists of 500,000 rows of financial time series data. Most columns containnegative and positive values, except for `neutronCount`, which includes only large positive values ranging from 1,000 to 99,999. Much higher in scale than the other features (which range roughly from -211 to 286). The relatively consistent means and standard deviations across the remaining columns suggest that this is likely price-related financial data.
 
-### Challenges (and how I overcame)
-The data was very noisy and we were not getting values for high and low. So we decided to try and denoise it. 
+A key insight came from visualizing each column using a **Savitzky–Golay filter**. The filter was able to **smooth and perfectly approximate local patterns** using a **2nd-degree polynomial**, which strongly indicates **continuity in the data**. This observation confirms that:
 
+* **The data is sequential in nature**, and
+* **Time snapshots are in correct chronological order**, rather than being randomly shuffled.
 
-### Confidence 
-<columnwise confidence analysis based on some statistics of your choice>
+This continuity is essential for any downstream time series modeling or forecasting tasks.
 
-### Summary
-Overall, I combined ...................................................... to derive the mapping. I also wrote a ........................... 
-
-
+A key challenge was the absence of information about the time bar duration (e.g., hourly, daily, etc.).
+Challenges Due to Missing Time Bar Duration:
+- Unable to determine whether each data point represents an hour, day, or another interval
+- Makes it difficult to assess the inherent noisiness of the data
+- Prevents effective use of sliding window techniques for time series analysis
 
 
+## The Investigation Process
+
+### 1. Finding Volume Column
+
+**Why neuronCount has to be Volume:**
+- Always positive integers (assets cannot be fractional or negative)
+- Significantly higher magnitude than other columns
+- No decimal points
+- Least correlated column to other columns when using `Pearson` and `Spearman` correlation matrices.
+- Highest standard deviation implying unlikely for being an asset price indicator
+- Confidence: 100%
+
+### 2. Figuring out the High and Low columns
+
+**The Logic:**
+- High must be ≥ all other columns in the same time period (except price)
+- Low must be ≤ all other columns in the same time period (except price)
+    - This is because the relation for price is not explicitly stated, and may be outside [low, high].
+    - This might also be due to the inherent noisiness in the data.
+    - Used denoising on the data to smoothen the data using `Exponential Moving Window`
+
+**The Method:**
+1. For each column, count how often it's the maximum in its row
+2. For each column, count how often it's the minimum in its row
+
+deltaX >= omega for all rows
+<br>gamma >= deltaX for all rows
+<br>gamma >= omega for all rows
+<br>gamma >= flux for all rows
+<br>gamma >= pulse for all rows
+<br>flux >= omega for all rows
+
+`Most incoming column: ['omega'] with 3 incoming connections`
+<br>`Most outgoing column: ['gamma'] with 4 outgoing connections`
+
+Column deltaX is largest 0 times and smallest 0 times
+<br>Column gamma is largest 500000 times and smallest 0 times
+<br>Column omega is largest 0 times and smallest 499846 times
+<br>Column flux is largest 0 times and smallest 0 times
+<br>Column pulse is largest 0 times and smallest 154 times
+
+**Gamma: high, confidence 100%**
+<br>**Omega: low, confidence 99.97%**
+
+
+### 3. Open vs Close vs Price
+
+A major breakthrough was realizing that Price is likely a derived metric from the other columns.
+To test this, we performed leave-one-out linear regression, predicting each column from the others and observing how the number of exact matches changed.
+
+
+| Column Left Out   | Exact Matches | Change from Baseline  |
+|-------------------|---------------|-----------------------|
+| Baseline          | 28146         | +0                    |
+| deltaX            | 27307         | -839                  |
+| gamma             | 28141         | -5                    |
+| omega             | 28138         | -8                    |
+| flux              | 27276         | -870                  |
+| neutronCount      | 28145         | -1                    |
+
+
+The largest accuracy was when Pulse was left out, suggesting that **Pulse is the most likely candidate for price**.
+
+---
+
+We also brute-forced possible Open-Close column pairs using denoised data. By summing the error of `(previous close - current open)`:
+
+* The lowest error occurred with **deltaX and flux**, at a shift of **7,200**.
+* The next best combination had a significantly higher error (\~95,807),
+
+This strongly supports that Open and Close values are encoded in deltaX and flux.
+
+
+**Analysis Results:**
+- Pulse: Price, confidence 99.97%
+---
+
+
+## Validation & Confidence Assessment
+
+[Show how you validated your findings and assessed confidence]
+
+### Statistical Validation
+| Column | Identified As | Confidence | Key Evidence |
+|--------|---------------|------------|--------------|
+| neuronCount | Volume | 95% | Always positive integers |
+| deltaX | High | 85% | Dominated maximum counts |
+| flux | Low | 80% | Dominated minimum counts |
+| pulse | Open | 70% | Temporal correlation patterns |
+
+### Cross-Validation Tests
+[Describe additional tests you ran to verify your mapping]
+
+---
+
+## Key Insights & Learnings
+
+### What Worked Well
+- [Insight 1 about your approach]
+- [Insight 2 about the data]
+- [Insight 3 about the methodology]
+
+### What Was Challenging
+- [Challenge 1 and how you overcame it]
+- [Challenge 2 and lessons learned]
+
+### If I Did This Again
+[What you'd do differently or improvements you'd make]
+
+---
+
+## The Final Mapping
+
+```python
+column_mapping = {
+    'neuronCount': 'Volume',
+    'deltaX': 'High', 
+    'flux': 'Low',
+    'pulse': 'Open',
+    'remaining_column': 'Close'
+}
+```
+
+**Overall Confidence: 82%**
+
+---
+
+## Conclusion
+
+[Summarize your success, the key methodology that worked, and why this approach could be useful for similar problems]
+
+*The combination of domain knowledge about financial data constraints, statistical analysis, and iterative validation allowed us to successfully reverse-engineer the column mapping with high confidence.*
+
+---
+
+## Code Repository
+
+[Link to full code/notebook if available]
+
+---
+
+*Tags: #DataScience #FinancialData #ReverseEngineering #DataDetective*
