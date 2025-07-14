@@ -101,6 +101,67 @@ This strongly supports that Open and Close values are encoded in deltaX and flux
 - Pulse: Price, confidence 99.97%
 ---
 
+Here's a clean and concise rewrite of your section **with improved structure**, clarity, and formatting. I've preserved all the content and formatted the results into readable sub-sections and percentages, using bullet points and light explanation where needed.
+
+---
+
+### 4. Differentiating Open vs Close
+
+We explored multiple strategies to determine which columns represent Open and Close prices, primarily between `deltaX` and `flux`.
+
+#### **Approach 1: Sliding Window (Size 2)**
+
+* Used simple momentum-based rules:
+
+  * Let `o1`, `c1`, `o2`, `c2` be open and close values for consecutive entries.
+  * If `o1 > c2`, then the trend is decreasing; in such cases, both opens should be greater than their respective closes, and vice versa.
+
+**Results:**
+
+
+| Mapping             | Match %   |
+|---------------------|-----------|
+| deltaX = Open       | 65.89%    |
+| flux = Open         | 64.29%    |
+
+
+---
+
+#### **Approach 2: Trend Windows (Size 1000)**
+
+* For sampled windows (length = 1000), we:
+
+  * Computed `o1 - c1000` to capture long-range trend.
+  * Compared it to prefix sum of `(Close - Open)` to validate the trend.
+
+**Results:**
+
+| Mapping             | Matches (out of 500) | Match %   |
+|---------------------|----------------------|-----------|
+| deltaX = Open       | 258                  | 51.6%     |
+| flux = Open         | 242                  | 48.4%     |
+
+---
+
+####  **Approach 3: Momentum-Based Brute Force**
+
+* For each row:
+
+  * Checked whether **previous close** is closer to **current price** than **previous open**, as would typically be expected in trending data.
+
+**Results:**
+
+
+| Mapping             | Match %   |
+|---------------------|-----------|
+| deltaX = Open       | 49.82%    |
+| flux = Open         | 50.18%    |
+
+
+* This method **contradicts** earlier ones by weakly suggesting that **deltaX = Close**, but with **very low confidence (only 50.18%)**.
+
+---
+
 
 ## Validation & Confidence Assessment
 
